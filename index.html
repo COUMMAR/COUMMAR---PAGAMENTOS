@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COUMMAR · Painel de Pagamentos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#eef1f4;
+    --paper-deep:#e5eaee;
+    --ink:#0E2A3E;
+    --ink-soft:#5b7184;
+    --ink-faint:#9fb5c6;
+    --line:#d7dee4;
+    --line-strong:#cddae3;
+    --gold:#9a7b3f;
+    --gold-2:#caa765;
+    --gold-dark:#86692f;
+    --gold-bg:#f3ead9;
+    --card:#FFFFFF;
+    --green:#1F8A5B; --green-bg:#e1f3ea; --green-bd:#b9dfc9;
+    --amber:#b5651d; --amber-bg:#fbeedc; --amber-bd:#ead0a8;
+    --red:#a23a28; --red-bg:#f7e0da; --red-bd:#eabbaa;
+    --tinsei:#163b54; --tinsei-bg:#e3e9ee; --tinsei-bd:#c9d5de;
+    --font-display:'Marcellus',Georgia,serif;
+    --font-sans:'Hanken Grotesk',system-ui,-apple-system,sans-serif;
+    --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(14,42,62,0.06), 0 1px 1px rgba(14,42,62,0.04);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-sans);
+    min-height:100vh;
+  }
+  .wrap{max-width:980px;margin:0 auto;}
+  .page-body{padding:1.5rem 1.25rem 4rem;}
+  a{color:inherit;}
+
+  /* ---------- Topbar (brand) ---------- */
+  .topbar{
+    background:var(--ink);color:#fff;padding:18px 0;
+    position:sticky;top:0;z-index:50;box-shadow:0 8px 24px -16px rgba(0,0,0,.5);
+  }
+  .topbar-inner{
+    max-width:980px;margin:0 auto;padding:0 1.25rem;
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:16px;}
+  .brand-logo{height:52px;width:auto;display:block;}
+  .brand-mark{
+    height:44px;width:44px;border-radius:50%;flex:none;
+    background:var(--gold);color:var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-weight:600;font-size:16px;letter-spacing:.02em;
+  }
+  .brand-text .eyebrow{display:block;font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-2);}
+  .brand-text h1{font-family:var(--font-display);font-weight:400;font-size:21px;margin:2px 0 0;color:#fff;letter-spacing:.005em;}
+  .today-badge{font-family:var(--font-mono);font-size:12px;color:#cddae3;}
+  .topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center;}
+
+  .subtitle{font-size:12.5px;color:var(--ink-soft);margin:0 0 1.5rem;}
+  .subtitle b{color:var(--ink);font-weight:600;}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    font-family:var(--font-sans);font-size:13.5px;font-weight:700;border-radius:9px;
+    border:1px solid var(--ink);background:var(--ink);color:#fff;
+    padding:10px 16px;cursor:pointer;transition:background .12s ease, transform .05s ease;
+    line-height:1.2;
+  }
+  .btn:hover{background:#0a2030;}
+  .btn:active{transform:translateY(1px);}
+  .btn:focus-visible{outline:2px solid var(--gold-2);outline-offset:2px;}
+  .btn.secondary{background:transparent;color:var(--ink);border-color:var(--line-strong);}
+  .btn.secondary:hover{background:rgba(14,42,62,0.06);}
+  .btn.danger{background:var(--red);border-color:var(--red);color:#fff;}
+  .btn.danger:hover{background:#8a3020;}
+  .btn.small{padding:6px 10px;font-size:12.5px;border-radius:7px;}
+  .btn.gold{background:var(--gold);border-color:var(--gold-dark);color:#fff;}
+  .btn.gold:hover{background:var(--gold-dark);}
+
+  /* ---------- Tabs (folder-tab style) ---------- */
+  .tabbar{display:flex;align-items:flex-end;gap:2px;margin-top:0;flex-wrap:wrap;}
+  .tab{
+    font-family:var(--font-sans);font-size:13.5px;font-weight:600;color:var(--ink-soft);
+    padding:9px 16px 8px;cursor:pointer;user-select:none;
+    background:var(--paper-deep);border:1px solid var(--line-strong);border-bottom:none;
+    border-radius:8px 8px 0 0; position:relative;top:1px;
+  }
+  .tab.active{color:var(--ink);background:var(--card);border-color:var(--line-strong);}
+  .tab:hover:not(.active){background:#dfe6ea;}
+  .tab:focus-visible{outline:2px solid var(--gold-2);outline-offset:-2px;}
+  .tab-count{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);margin-left:4px;}
+  .tab.active .tab-count{color:var(--gold-dark);}
+
+  .panel{
+    background:var(--card);border:1px solid var(--line-strong);border-radius:0 12px 12px 12px;
+    padding:1.25rem 1.25rem 1.5rem;
+  }
+
+  /* ---------- Filter chips ---------- */
+  .chiprow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;}
+  .chip{
+    font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;cursor:pointer;
+    border:1px solid var(--line-strong);background:var(--paper);color:var(--ink-soft);
+  }
+  .chip.active{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .chip:focus-visible{outline:2px solid var(--gold);outline-offset:1px;}
+
+  /* ---------- Summary metrics ---------- */
+  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:1.4rem;}
+  .metric{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;}
+  .metric .label{font-size:11px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+  .metric .value{font-family:var(--font-mono);font-size:20px;margin-top:5px;font-weight:600;}
+  .metric.alert{border-color:var(--red-bd);background:var(--red-bg);}
+  .metric.alert .value{color:var(--red);}
+  .metric.ok .value{color:var(--green);}
+  .metric.gold .value{color:var(--gold-dark);}
+
+  /* ---------- Rows ---------- */
+  .group-title{
+    font-family:var(--font-display);font-size:15px;font-weight:600;color:var(--ink);
+    margin:1.4rem 0 .6rem;padding-bottom:5px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:baseline;
+  }
+  .group-title:first-child{margin-top:0;}
+  .group-title .sub{font-family:var(--font-mono);font-size:12px;font-weight:400;color:var(--ink-soft);}
+
+  .row{
+    display:grid;grid-template-columns:78px 1.6fr 96px 118px 96px auto;gap:10px;align-items:center;
+    background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:6px;font-size:13.5px;
+  }
+  .row.atrasado{border-left:3px solid var(--red);}
+  .row.pago{opacity:.65;}
+  .row.pago .valor{text-decoration:line-through;text-decoration-color:var(--green);}
+
+  .pill{font-size:10px;font-weight:700;padding:4px 9px;border-radius:999px;text-align:center;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;}
+  .pill.COUMMAR{background:var(--ink);color:#fff;border:1px solid var(--ink);}
+  .pill.TINSEI{background:var(--tinsei-bg);color:var(--tinsei);border:1px solid var(--tinsei-bd);}
+  .pill.outro{background:var(--gold-bg);color:var(--gold-dark);border:1px solid var(--gold);}
+
+  .row .desc{font-weight:600;line-height:1.3;}
+  .row .desc .num{font-weight:500;color:var(--ink-soft);font-family:var(--font-mono);font-size:12px;}
+  .row .desc .obs{display:block;font-weight:400;font-size:11.5px;color:var(--amber);margin-top:3px;}
+  .row .desc .resp{display:block;font-weight:400;font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+
+  .row .venc{font-family:var(--font-mono);font-size:12.5px;color:var(--ink-soft);}
+  .row .venc.hoje{color:var(--amber);font-weight:600;}
+  .row .venc.atrasado-txt{color:var(--red);font-weight:600;}
+
+  .row .valor{font-family:var(--font-mono);text-align:right;font-weight:600;}
+
+  .badge{font-size:10px;font-weight:700;padding:4px 9px;border-radius:999px;text-align:center;white-space:nowrap;text-transform:uppercase;letter-spacing:.06em;}
+  .badge.pendente{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bd);}
+  .badge.atrasado{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);}
+  .badge.pago{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
+
+  .row-actions{display:flex;gap:4px;justify-content:flex-end;flex-wrap:wrap;align-items:center;}
+  .attach-chip{
+    font-family:var(--font-sans);font-size:11.5px;font-weight:600;color:var(--ink-soft);
+    background:var(--paper);border:1px solid var(--line-strong);border-radius:20px;
+    padding:5px 10px;cursor:pointer;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .attach-chip:hover{background:var(--paper-deep);color:var(--ink);}
+  .attach-chip:focus-visible{outline:2px solid var(--gold-2);outline-offset:1px;}
+  .attach-chip.filled{background:var(--gold-bg);border-color:var(--gold);color:var(--gold-dark);}
+  .icon-btn{
+    background:none;border:1px solid transparent;cursor:pointer;color:var(--ink-soft);font-size:15px;
+    padding:5px 6px;border-radius:6px;line-height:1;position:relative;
+  }
+  .icon-btn:hover{color:var(--ink);background:var(--paper);}
+  .icon-btn:focus-visible{outline:2px solid var(--gold);outline-offset:1px;}
+  .icon-btn.has-file{color:var(--gold-dark);}
+  .icon-btn.has-file::after{
+    content:'';position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--gold);
+  }
+
+  .empty{color:var(--ink-soft);font-size:13.5px;padding:2.5rem 0;text-align:center;}
+
+  /* ---------- History (accordion) ---------- */
+  .month-block{border:1px solid var(--line);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;}
+  .month-head{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:12px 14px;background:var(--paper);cursor:pointer;
+  }
+  .month-head:focus-visible{outline:2px solid var(--gold);outline-offset:-2px;}
+  .month-head .name{font-family:var(--font-display);font-weight:600;font-size:15px;}
+  .month-head .stats{display:flex;gap:14px;font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);}
+  .month-head .stats b{color:var(--ink);}
+  .month-head .chevron{transition:transform .15s ease;color:var(--ink-soft);}
+  .month-block.open .chevron{transform:rotate(90deg);}
+  .month-body{padding:12px 14px;display:none;}
+  .month-block.open .month-body{display:block;}
+
+  /* ---------- Modal ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(20,25,30,0.5);display:flex;align-items:center;justify-content:center;z-index:20;padding:1rem;}
+  .modal{background:var(--card);border-radius:12px;padding:1.5rem;width:min(460px,94vw);max-height:88vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.25);}
+  .modal h2{font-family:var(--font-display);font-size:19px;margin:0 0 1rem;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em;}
+  .field input,.field select,.field textarea{
+    width:100%;padding:9px 10px;border:1px solid var(--line-strong);border-radius:6px;font-size:14px;font-family:var(--font-sans);background:var(--paper);color:var(--ink);
+  }
+  .field input:focus-visible,.field select:focus-visible,.field textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px;}
+  .field textarea{resize:vertical;min-height:56px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:1.1rem;}
+  .confirm-del{display:flex;gap:6px;justify-content:flex-end;align-items:center;}
+  .confirm-del span{font-size:11.5px;color:var(--ink-soft);}
+  .confirm-del button{font-size:11.5px;padding:4px 9px;}
+
+  .attach-preview{margin-bottom:10px;}
+  .attach-preview img{max-width:100%;max-height:320px;display:block;margin:0 auto;border:1px solid var(--line);border-radius:8px;object-fit:contain;background:var(--paper);}
+  .attach-preview embed{width:100%;height:360px;border:1px solid var(--line);border-radius:8px;}
+  .attach-preview-generic{
+    background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px;
+    color:var(--ink-soft);font-size:13px;text-align:center;
+  }
+  .attach-current{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--paper);
+    border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px;
+  }
+  .attach-current .fname{font-family:var(--font-mono);font-size:12px;color:var(--ink);word-break:break-all;}
+  .attach-hint{font-size:11.5px;color:var(--ink-soft);margin-top:6px;}
+  .attach-error{font-size:12px;color:var(--red);margin-top:6px;}
+
+  .footnote{font-size:11.5px;color:var(--ink-soft);margin-top:1.75rem;text-align:center;line-height:1.6;}
+  .footnote code{background:var(--paper-deep);padding:1px 5px;border-radius:4px;font-family:var(--font-mono);}
+
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+
+  @media (max-width:720px){
+    .row{grid-template-columns:1fr;gap:6px;}
+    .row > div{width:100%;}
+    .row .valor{text-align:left;}
+    .row-actions{justify-content:flex-start;}
+    .field-row{grid-template-columns:1fr;}
+    .brand-text h1{font-size:18px;}
+    .brand-logo{height:38px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;animation:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <img class="brand-logo" alt="Coummar" src="data:image/png;base64,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">
+      <div class="brand-text">
+        <span class="eyebrow">Financeiro</span>
+        <h1>Painel de Pagamentos</h1>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span class="today-badge" id="today-label"></span>
+      <button class="btn gold" id="btn-add">+ Novo pagamento</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap page-body">
+
+  <div class="subtitle">Empresa exibida em cada lançamento — <b>COUMMAR</b> / <b>TINSEI</b> · atualizado pelo time financeiro</div>
+
+  <nav class="tabbar" id="tabs" role="tablist" aria-label="Período">
+    <div class="tab active" data-tab="hoje" role="tab">Hoje</div>
+    <div class="tab" data-tab="amanha" role="tab">Amanhã</div>
+    <div class="tab" data-tab="semana" role="tab">Próximos 7 dias</div>
+    <div class="tab" data-tab="trinta" role="tab">Próximos 30 dias</div>
+    <div id="tabs-months" style="display:contents"></div>
+    <div class="tab" data-tab="todos" role="tab">Todos</div>
+    <div class="tab" data-tab="historico" role="tab">Histórico</div>
+  </nav>
+
+  <section class="panel">
+    <input type="text" id="search-input" placeholder="🔎 Buscar por fornecedor ou nº da invoice…" style="width:100%;padding:10px 12px;margin-bottom:12px;border:1px solid var(--line-strong);border-radius:8px;font-size:14px;font-family:var(--font-sans);background:var(--paper);color:var(--ink);">
+    <div class="chiprow" id="empresa-filter"></div>
+    <div class="summary" id="summary"></div>
+    <div id="content"></div>
+  </section>
+
+  <p class="footnote">
+    Atualiza sozinho a cada 20s, ou use <code>Atualizar agora</code>.
+    <br>
+    <span class="btn secondary small" id="btn-refresh" style="display:inline-block;margin-top:8px;cursor:pointer;">Atualizar agora</span>
+    <span class="btn secondary small" id="btn-backup" style="display:inline-block;margin-top:8px;margin-left:6px;cursor:pointer;">⬇ Backup completo (.zip)</span>
+    <span class="btn secondary small" id="btn-restore" style="display:inline-block;margin-top:8px;margin-left:6px;cursor:pointer;">⬆ Restaurar (.zip/.xlsx)</span>
+    <input type="file" id="f-restore-input" accept=".zip,.xlsx,.xls" style="display:none;">
+    <span class="btn secondary small" id="btn-texto-30" style="display:inline-block;margin-top:8px;margin-left:6px;cursor:pointer;">📋 Texto (30 dias)</span>
+  </p>
+</div>
+
+<div id="modal-root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+// ====== CONFIGURAÇÃO DO SUPABASE — preencha com os dados do SEU projeto ======
+// Painel do Supabase > Settings > API > "Project URL" e "anon public" key.
+var SUPABASE_URL = 'https://wmqmhxlxjrxdxyhrzwon.supabase.co';
+var SUPABASE_ANON_KEY = 'sb_publishable__pGQJM1FNYUaZRKNieDGfw_WbR_J_7O';
+// ==============================================================================
+
+(function(){
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Substitui o window.storage nativo do Claude (que só existe dentro do claude.ai)
+  // por um equivalente que lê/grava na tabela kv_store do Supabase. A API é idêntica
+  // (get/set/delete/list com a mesma forma de retorno), então o resto do app nem
+  // percebe a troca.
+  window.storage = {
+    get: async function(key){
+      var res = await sb.from('kv_store').select('value').eq('key', key).maybeSingle();
+      if(res.error) throw res.error;
+      return res.data ? {key: key, value: res.data.value, shared: true} : null;
+    },
+    set: async function(key, value){
+      var res = await sb.from('kv_store').upsert({ key: key, value: value, updated_at: new Date().toISOString() });
+      if(res.error) throw res.error;
+      return {key: key, value: value, shared: true};
+    },
+    delete: async function(key){
+      var res = await sb.from('kv_store').delete().eq('key', key);
+      if(res.error) throw res.error;
+      return {key: key, deleted: true, shared: true};
+    },
+    list: async function(prefix){
+      var query = sb.from('kv_store').select('key');
+      if(prefix) query = query.like('key', prefix + '%');
+      var res = await query;
+      if(res.error) throw res.error;
+      return {keys: (res.data || []).map(function(r){ return r.key; }), prefix: prefix, shared: true};
+    }
+  };
+})();
+</script>
+<script>
+(function(){
+'use strict';
+
+var KEY_PAYMENTS = 'coummar_payments_v1';
+var KEY_FILE_PREFIX = 'coummar_file_v1:'; // + kind:id  -> {name,type,data}
+var MAX_FILE_BYTES = 3.5 * 1024 * 1024; // ~3.5MB raw, safely under 5MB stored as base64
+
+var state = {
+  payments: [],
+  tab: 'month:' + monthKey(todayISO()),
+  empresaFilter: 'todas',
+  openMonths: {},
+  searchQuery: ''
+};
+
+var MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+var MESES_ABR = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+// ---------- helpers ----------
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+
+function fmtMoney(v){
+  return Number(v||0).toLocaleString('en-US',{style:'currency',currency:'USD'});
+}
+
+function fmtDate(iso){
+  if(!iso) return '—';
+  var parts = iso.split('-');
+  return parts[2] + '/' + parts[1] + '/' + parts[0];
+}
+
+function monthKey(iso){ return iso.slice(0,7); }
+
+function monthLabel(key){
+  var parts = key.split('-');
+  var y = parts[0], m = parseInt(parts[1],10) - 1;
+  var name = MESES[m] || '';
+  return capitalize(name) + ' de ' + y;
+}
+
+function monthLabelShort(key){
+  var parts = key.split('-');
+  var y = parts[0], m = parseInt(parts[1],10) - 1;
+  var name = MESES_ABR[m] || '';
+  return capitalize(name) + ' ' + y;
+}
+
+function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+function uid(){ return 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
+
+function statusOf(p){
+  if(p.status === 'pago') return 'pago';
+  if(p.vencimento < todayISO()) return 'atrasado';
+  return 'pendente';
+}
+
+function empresaClass(empresa){
+  if(empresa === 'COUMMAR') return 'COUMMAR';
+  if(empresa === 'TINSEI') return 'TINSEI';
+  return 'outro';
+}
+
+// ---------- storage ----------
+async function loadPayments(){
+  try{
+    var r = await window.storage.get(KEY_PAYMENTS, true);
+    state.payments = r ? JSON.parse(r.value) : null;
+  }catch(e){
+    state.payments = null;
+  }
+  if(!state.payments){
+    state.payments = seedData();
+    await savePayments();
+  }
+  render();
+}
+
+async function savePayments(){
+  try{
+    var res = await window.storage.set(KEY_PAYMENTS, JSON.stringify(state.payments), true);
+    if(!res){ console.error('Falha ao salvar pagamentos'); }
+  }catch(e){
+    console.error('Erro ao salvar pagamentos', e);
+  }
+}
+
+async function getFile(kind, id){
+  try{
+    var r = await window.storage.get(KEY_FILE_PREFIX + kind + ':' + id, true);
+    return r ? JSON.parse(r.value) : null;
+  }catch(e){
+    return null;
+  }
+}
+
+async function setFile(kind, id, fileObj){
+  return window.storage.set(KEY_FILE_PREFIX + kind + ':' + id, JSON.stringify(fileObj), true);
+}
+
+async function deleteFile(kind, id){
+  try{
+    await window.storage.delete(KEY_FILE_PREFIX + kind + ':' + id, true);
+  }catch(e){ /* já não existia */ }
+}
+
+// ---------- seed data (agenda enviada pelo financeiro) ----------
+function seedData(){
+  return [
+    {id:uid(), empresa:'COUMMAR', fornecedor:'RDS', numero:'IN167285', valor:694.12, vencimento:'2026-07-22', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'Panda Enterprises INC', numero:'IN-07083', valor:2550.00, vencimento:'2026-07-22', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'INTERCON', numero:'C34740', valor:5200.00, vencimento:'2026-07-22', responsavel:'', status:'pendente', data_pagamento:null, obs:'Nome do fornecedor parecido com o do lançamento C34739 (INTERCOM) — confirmar se são a mesma empresa ou duas diferentes.'},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'INTERCOM', numero:'C34739', valor:8350.00, vencimento:'2026-07-22', responsavel:'', status:'pendente', data_pagamento:null, obs:'Nome do fornecedor parecido com o do lançamento C34740 (INTERCON) — confirmar se são a mesma empresa ou duas diferentes.'},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'SkyWay', numero:'26-12113', valor:625.00, vencimento:'2026-07-23', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'ELECTROCYCLE', numero:'INV-000225', valor:13650.00, vencimento:'2026-07-23', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'Toner Connect', numero:'1822', valor:15110.00, vencimento:'2026-07-30', responsavel:'', status:'pendente', data_pagamento:null, obs:'Invoice 1822 dividida entre COUMMAR e TINSEI.'},
+    {id:uid(), empresa:'TINSEI', fornecedor:'Toner Connect', numero:'1822', valor:2983.00, vencimento:'2026-07-30', responsavel:'', status:'pendente', data_pagamento:null, obs:'Parte TINSEI do invoice 1822.'},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'Toner Connect (frete)', numero:'1860', valor:310.00, vencimento:'2026-07-30', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'TINSEI', fornecedor:'Toner Connect (frete)', numero:'1860', valor:153.66, vencimento:'2026-07-30', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'Toner Connect (frete)', numero:'1489', valor:62.18, vencimento:'2026-07-30', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'TINSEI', fornecedor:'Toner Connect (frete)', numero:'1489', valor:124.36, vencimento:'2026-07-30', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'SOUTHESTERN', numero:'42489', valor:15975.00, vencimento:'2026-07-31', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'RDS', numero:'IN167569', valor:1960.20, vencimento:'2026-08-01', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'TechTrading', numero:'476613', valor:21475.00, vencimento:'2026-08-07', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'TechTrading', numero:'476614', valor:11118.00, vencimento:'2026-08-07', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'TechTrading', numero:'476615', valor:11612.50, vencimento:'2026-08-07', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'TINSEI', fornecedor:'TQL', numero:'37435776', valor:589.32, vencimento:'2026-08-07', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'RDS', numero:'IN168141', valor:320.22, vencimento:'2026-08-07', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'CANON', numero:'COUMMAR 21', valor:18020.00, vencimento:'2026-08-11', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'RDS', numero:'IN168263', valor:231.27, vencimento:'2026-08-12', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'TQL', numero:'37436533', valor:1300.00, vencimento:'2026-08-14', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'TOYA', numero:'INV26050291', valor:1114.66, vencimento:'2026-08-14', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'RDS', numero:'IN168425', valor:47.04, vencimento:'2026-08-14', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'RDS', numero:'IN168428', valor:532.60, vencimento:'2026-08-14', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'RDS', numero:'IN168429', valor:130.36, vencimento:'2026-08-14', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'TQL', numero:'37497122', valor:721.59, vencimento:'2026-08-14', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'RDS', numero:'SO40721', valor:47.04, vencimento:'2026-08-14', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'RDS', numero:'IN168700', valor:266.30, vencimento:'2026-08-20', responsavel:'', status:'pendente', data_pagamento:null, obs:''},
+    {id:uid(), empresa:'COUMMAR', fornecedor:'RDS', numero:'IN168707', valor:1604.60, vencimento:'2026-08-21', responsavel:'', status:'pendente', data_pagamento:null, obs:''}
+  ];
+}
+
+// ---------- filtering ----------
+function inWindow(p, tab){
+  var t = todayISO();
+  if(tab === 'hoje') return p.vencimento === t;
+  if(tab === 'amanha'){
+    var d0 = new Date(t + 'T00:00:00');
+    d0.setDate(d0.getDate() + 1);
+    return p.vencimento === d0.toISOString().slice(0,10);
+  }
+  if(tab === 'semana'){
+    var d1 = new Date(t + 'T00:00:00');
+    var d2 = new Date(p.vencimento + 'T00:00:00');
+    var diff = (d2 - d1) / 86400000;
+    return diff >= 0 && diff <= 6;
+  }
+  if(tab === 'trinta'){
+    var d3 = new Date(t + 'T00:00:00');
+    var d4 = new Date(p.vencimento + 'T00:00:00');
+    var diff2 = (d4 - d3) / 86400000;
+    return diff2 >= 0 && diff2 <= 29;
+  }
+  return true;
+}
+
+function empresaMatches(p){
+  return state.empresaFilter === 'todas' || p.empresa === state.empresaFilter;
+}
+
+function searchMatches(p){
+  if(!state.searchQuery) return true;
+  var q = state.searchQuery.toLowerCase();
+  return (p.fornecedor || '').toLowerCase().indexOf(q) !== -1 ||
+         (p.numero || '').toLowerCase().indexOf(q) !== -1;
+}
+
+function filteredList(){
+  var base = state.payments.filter(empresaMatches).filter(searchMatches);
+  if(state.tab === 'todos' || state.tab === 'historico') return base;
+  if(state.tab.indexOf('month:') === 0){
+    var mk = state.tab.slice(6);
+    return base.filter(function(p){ return monthKey(p.vencimento) === mk; });
+  }
+  return base.filter(function(p){ return statusOf(p) === 'atrasado' || inWindow(p, state.tab); });
+}
+
+// ---------- render ----------
+function upcomingMonthKeys(){
+  var parts = todayISO().split('-');
+  var y = parseInt(parts[0],10), m = parseInt(parts[1],10) - 1; // 0-indexed
+  var keys = [];
+  for(var i=0;i<3;i++){
+    var d = new Date(y, m + i, 1);
+    var mm = d.getMonth() + 1;
+    keys.push(d.getFullYear() + '-' + (mm < 10 ? '0' + mm : mm));
+  }
+  return keys;
+}
+
+function render(){
+  document.getElementById('today-label').textContent = 'Hoje: ' + fmtDate(todayISO());
+
+  // se a aba selecionada for um mês que saiu da janela (mês atual + próximos 2), volta para "Hoje"
+  if(state.tab.indexOf('month:') === 0 && upcomingMonthKeys().indexOf(state.tab.slice(6)) === -1){
+    state.tab = 'hoje';
+  }
+
+  renderMonthTabs();
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.dataset.tab === state.tab); });
+
+  renderEmpresaChips();
+  renderSummary();
+
+  if(state.tab === 'historico'){
+    renderHistory();
+  } else {
+    renderScheduleByDate();
+  }
+}
+
+function renderMonthTabs(){
+  var container = document.getElementById('tabs-months');
+  if(!container) return;
+  var keys = upcomingMonthKeys();
+  container.innerHTML = keys.map(function(mk){
+    return '<div class="tab" data-tab="month:' + mk + '" role="tab">' + monthLabelShort(mk) + '</div>';
+  }).join('');
+}
+
+function renderEmpresaChips(){
+  var empresas = Array.from(new Set(state.payments.map(function(p){ return p.empresa; }))).sort();
+  var el = document.getElementById('empresa-filter');
+  var html = '<div class="chip' + (state.empresaFilter==='todas'?' active':'') + '" data-empresa="todas">Todas as empresas</div>';
+  empresas.forEach(function(emp){
+    html += '<div class="chip' + (state.empresaFilter===emp?' active':'') + '" data-empresa="' + escapeHtml(emp) + '">' + escapeHtml(emp) + '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function renderSummary(){
+  var list = filteredList();
+  var pendentes = list.filter(function(p){ return statusOf(p) !== 'pago'; });
+  var atrasados = list.filter(function(p){ return statusOf(p) === 'atrasado'; });
+  var pagos = list.filter(function(p){ return statusOf(p) === 'pago'; });
+
+  var totalPendente = pendentes.reduce(function(s,p){ return s + Number(p.valor||0); }, 0);
+  var totalAtrasado = atrasados.reduce(function(s,p){ return s + Number(p.valor||0); }, 0);
+  var totalPago = pagos.reduce(function(s,p){ return s + Number(p.valor||0); }, 0);
+
+  document.getElementById('summary').innerHTML =
+    '<div class="metric gold"><div class="label">A pagar</div><div class="value">' + fmtMoney(totalPendente) + '</div></div>' +
+    '<div class="metric' + (atrasados.length ? ' alert' : '') + '"><div class="label">Em atraso (' + atrasados.length + ')</div><div class="value">' + fmtMoney(totalAtrasado) + '</div></div>' +
+    '<div class="metric ok"><div class="label">Pago no período</div><div class="value">' + fmtMoney(totalPago) + '</div></div>';
+}
+
+function rowHtml(p){
+  var st = statusOf(p);
+  var vencClass = st === 'atrasado' ? 'atrasado-txt' : (p.vencimento === todayISO() ? 'hoje' : '');
+  var invLabel = p.hasInvoice ? ('📎 ' + (p.invoiceFileName || 'invoice')) : '📎 Anexar invoice';
+  var compLabel = p.hasComprovante ? (p.comprovanteText ? '🧾 Comprovante (texto)' : ('🧾 ' + (p.comprovanteFileName || 'comprovante'))) : '🧾 Anexar comprovante';
+
+  return '' +
+  '<div class="row ' + st + '" data-id="' + p.id + '">' +
+    '<div><span class="pill ' + empresaClass(p.empresa) + '">' + escapeHtml(p.empresa) + '</span></div>' +
+    '<div class="desc">' + escapeHtml(p.fornecedor) + ' <span class="num">· ' + escapeHtml(p.numero || '—') + '</span>' +
+      (p.responsavel ? '<span class="resp">Responsável: ' + escapeHtml(p.responsavel) + '</span>' : '') +
+      (p.obs ? '<span class="obs">⚠ ' + escapeHtml(p.obs) + '</span>' : '') +
+    '</div>' +
+    '<div class="venc ' + vencClass + '">' + fmtDate(p.vencimento) + '</div>' +
+    '<div class="valor">' + fmtMoney(p.valor) + '</div>' +
+    '<div><span class="badge ' + st + '">' + st + '</span></div>' +
+    '<div class="row-actions">' +
+      '<button class="attach-chip' + (p.hasInvoice ? ' filled' : '') + '" title="Invoice" data-action="invoice" data-id="' + p.id + '">' + escapeHtml(invLabel) + '</button>' +
+      '<button class="attach-chip' + (p.hasComprovante ? ' filled' : '') + '" title="Comprovante de pagamento" data-action="comprovante" data-id="' + p.id + '">' + escapeHtml(compLabel) + '</button>' +
+      '<button class="icon-btn" title="' + (st==='pago' ? 'Reabrir' : 'Marcar como pago') + '" data-action="toggle" data-id="' + p.id + '">' + (st==='pago' ? '↺' : '✓') + '</button>' +
+      '<button class="icon-btn" title="Editar" data-action="edit" data-id="' + p.id + '">✎</button>' +
+      '<button class="icon-btn" title="Excluir" data-action="delete" data-id="' + p.id + '">🗑</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderScheduleByDate(){
+  var list = filteredList().sort(function(a,b){ return a.vencimento.localeCompare(b.vencimento); });
+  var content = document.getElementById('content');
+  if(list.length === 0){
+    content.innerHTML = '<div class="empty">Nenhum pagamento encontrado' + (state.searchQuery ? ' pra essa busca' : ' neste período') + '.</div>';
+    return;
+  }
+  var byDate = {};
+  var order = [];
+  list.forEach(function(p){
+    if(!byDate[p.vencimento]){ byDate[p.vencimento] = []; order.push(p.vencimento); }
+    byDate[p.vencimento].push(p);
+  });
+  content.innerHTML = order.map(function(d){
+    var items = byDate[d];
+    var subtotal = items.reduce(function(s,p){ return s + Number(p.valor||0); }, 0);
+    return '<div class="group-title">' + fmtDate(d) + '<span class="sub">' + fmtMoney(subtotal) + '</span></div>' + items.map(rowHtml).join('');
+  }).join('');
+}
+
+function renderHistory(){
+  var list = filteredList();
+  var byMonth = {};
+  list.forEach(function(p){
+    var k = monthKey(p.vencimento);
+    if(!byMonth[k]) byMonth[k] = [];
+    byMonth[k].push(p);
+  });
+  var keys = Object.keys(byMonth).sort().reverse();
+  var content = document.getElementById('content');
+  if(keys.length === 0){
+    content.innerHTML = '<div class="empty">Nenhum pagamento registrado ainda.</div>';
+    return;
+  }
+  content.innerHTML = keys.map(function(k){
+    var items = byMonth[k].sort(function(a,b){ return a.vencimento.localeCompare(b.vencimento); });
+    var total = items.reduce(function(s,p){ return s + Number(p.valor||0); }, 0);
+    var pago = items.filter(function(p){ return statusOf(p)==='pago'; }).reduce(function(s,p){ return s + Number(p.valor||0); }, 0);
+    var isOpen = !!state.openMonths[k];
+    return '' +
+    '<div class="month-block' + (isOpen ? ' open' : '') + '" data-month="' + k + '">' +
+      '<div class="month-head" data-action="toggle-month" data-month="' + k + '">' +
+        '<span class="name">' + monthLabel(k) + '</span>' +
+        '<span class="stats"><span>Total <b>' + fmtMoney(total) + '</b></span><span>Pago <b>' + fmtMoney(pago) + '</b></span><span>' + items.length + ' lançamento(s)</span></span>' +
+        '<span class="chevron">›</span>' +
+      '</div>' +
+      '<div class="month-body">' + items.map(rowHtml).join('') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ---------- actions ----------
+async function toggleStatus(id){
+  var p = state.payments.find(function(x){ return x.id === id; });
+  if(!p) return;
+  if(p.status === 'pago'){
+    p.status = 'pendente';
+    p.data_pagamento = null;
+  } else {
+    p.status = 'pago';
+    p.data_pagamento = todayISO();
+  }
+  render();
+  await savePayments();
+}
+
+function askDelete(id){
+  var row = document.querySelector('.row[data-id="' + id + '"] .row-actions');
+  if(!row) return;
+  row.innerHTML = '<div class="confirm-del"><span>Excluir?</span><button class="btn danger small" data-action="confirm-delete" data-id="' + id + '">Sim</button><button class="btn secondary small" data-action="cancel-delete" data-id="' + id + '">Não</button></div>';
+}
+
+async function confirmDelete(id){
+  state.payments = state.payments.filter(function(p){ return p.id !== id; });
+  await deleteFile('invoice', id);
+  await deleteFile('comprovante', id);
+  render();
+  await savePayments();
+}
+
+// ---------- add/edit modal ----------
+var editingId = null;
+
+function openAdd(){
+  editingId = null;
+  showFormModal({empresa:'COUMMAR', fornecedor:'', numero:'', valor:'', vencimento: todayISO(), responsavel:'', obs:''});
+}
+
+function openEdit(id){
+  var p = state.payments.find(function(x){ return x.id === id; });
+  if(!p) return;
+  editingId = id;
+  showFormModal(p);
+}
+
+function showFormModal(data){
+  var empresasConhecidas = Array.from(new Set(state.payments.map(function(p){ return p.empresa; })));
+  ['COUMMAR','TINSEI'].forEach(function(e){ if(empresasConhecidas.indexOf(e) === -1) empresasConhecidas.push(e); });
+
+  var options = empresasConhecidas.map(function(e){
+    return '<option value="' + escapeHtml(e) + '"' + (data.empresa === e ? ' selected' : '') + '>' + escapeHtml(e) + '</option>';
+  }).join('') + '<option value="__outra__">Outra…</option>';
+
+  document.getElementById('modal-root').innerHTML =
+  '<div class="overlay" id="overlay">' +
+    '<div class="modal" role="dialog" aria-modal="true">' +
+      '<h2>' + (editingId ? 'Editar pagamento' : 'Novo pagamento') + '</h2>' +
+      '<div class="field"><label for="f-empresa">Empresa</label>' +
+        '<select id="f-empresa">' + options + '</select>' +
+      '</div>' +
+      '<div class="field" id="f-empresa-outra-wrap" style="display:none;"><label for="f-empresa-outra">Nome da empresa</label><input id="f-empresa-outra" placeholder="Nome da empresa"></div>' +
+      '<div class="field"><label for="f-fornecedor">Fornecedor</label><input id="f-fornecedor" value="' + escapeHtml(data.fornecedor||'') + '" placeholder="Ex: RDS, TOYA, Canon..."></div>' +
+      '<div class="field-row">' +
+        '<div class="field"><label for="f-numero">Nº da invoice</label><input id="f-numero" value="' + escapeHtml(data.numero||'') + '"></div>' +
+        '<div class="field"><label for="f-valor">Valor (US$)</label><input id="f-valor" type="number" step="0.01" value="' + (data.valor||'') + '"></div>' +
+      '</div>' +
+      '<div class="field-row">' +
+        '<div class="field"><label for="f-venc">Vencimento</label><input id="f-venc" type="date" value="' + (data.vencimento||'') + '"></div>' +
+        '<div class="field"><label for="f-resp">Responsável</label><input id="f-resp" value="' + escapeHtml(data.responsavel||'') + '" placeholder="Nome"></div>' +
+      '</div>' +
+      '<div class="field"><label for="f-obs">Observações</label><textarea id="f-obs" placeholder="Opcional">' + escapeHtml(data.obs||'') + '</textarea></div>' +
+      '<div class="field"><label for="f-invoice">Invoice</label>' +
+        (data.hasInvoice ? '<p class="attach-hint">Já tem invoice anexada (' + escapeHtml(data.invoiceFileName||'arquivo') + '). Escolher outro arquivo substitui.</p>' : '') +
+        '<input type="file" id="f-invoice" accept=".pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv">' +
+        '<p class="attach-hint">Opcional — também dá pra anexar depois pela etiqueta 📎. Máx. 3,5 MB.</p>' +
+        '<div id="f-invoice-error"></div>' +
+      '</div>' +
+      '<div class="modal-actions">' +
+        '<button class="btn secondary" data-action="close-modal">Cancelar</button>' +
+        '<button class="btn" data-action="save-form">Salvar</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  var sel = document.getElementById('f-empresa');
+  var outraWrap = document.getElementById('f-empresa-outra-wrap');
+  function syncOutra(){
+    if(sel.value === '__outra__'){ outraWrap.style.display = 'block'; }
+    else{ outraWrap.style.display = 'none'; }
+  }
+  sel.addEventListener('change', syncOutra);
+  if(empresasConhecidas.indexOf(data.empresa) === -1 && data.empresa){
+    sel.value = '__outra__';
+    document.getElementById('f-empresa-outra').value = data.empresa;
+  }
+  syncOutra();
+}
+
+function closeModal(){
+  document.getElementById('modal-root').innerHTML = '';
+}
+
+async function saveForm(){
+  var sel = document.getElementById('f-empresa');
+  var empresa = sel.value === '__outra__' ? document.getElementById('f-empresa-outra').value.trim() : sel.value;
+  var fornecedor = document.getElementById('f-fornecedor').value.trim();
+  var numero = document.getElementById('f-numero').value.trim();
+  var valor = parseFloat(document.getElementById('f-valor').value) || 0;
+  var vencimento = document.getElementById('f-venc').value;
+  var responsavel = document.getElementById('f-resp').value.trim();
+  var obs = document.getElementById('f-obs').value.trim();
+
+  if(!fornecedor || !vencimento || !empresa){ return; }
+
+  var invoiceInput = document.getElementById('f-invoice');
+  var invoiceFile = invoiceInput && invoiceInput.files && invoiceInput.files[0];
+  var invoiceErrEl = document.getElementById('f-invoice-error');
+  if(invoiceFile && invoiceFile.size > MAX_FILE_BYTES){
+    if(invoiceErrEl) invoiceErrEl.innerHTML = '<p class="attach-error">Invoice muito grande (máx. 3,5 MB). O restante do cadastro ainda não foi salvo — escolha outro arquivo ou remova a seleção.</p>';
+    return;
+  }
+
+  var p;
+  if(editingId){
+    p = state.payments.find(function(x){ return x.id === editingId; });
+    Object.assign(p, {empresa:empresa, fornecedor:fornecedor, numero:numero, valor:valor, vencimento:vencimento, responsavel:responsavel, obs:obs});
+  } else {
+    p = {
+      id: uid(), empresa:empresa, fornecedor:fornecedor, numero:numero, valor:valor, vencimento:vencimento,
+      responsavel:responsavel, status:'pendente', data_pagamento:null, obs:obs, hasInvoice:false, hasComprovante:false
+    };
+    state.payments.push(p);
+  }
+
+  if(invoiceFile){
+    try{
+      var b64 = await fileToBase64(invoiceFile);
+      await setFile('invoice', p.id, {name: invoiceFile.name, type: invoiceFile.type, data: b64});
+      p.hasInvoice = true;
+      p.invoiceFileName = invoiceFile.name;
+    }catch(e){
+      console.error('Erro ao anexar invoice no cadastro', e);
+    }
+  }
+
+  closeModal();
+  render();
+  await savePayments();
+}
+
+// ---------- attachment modal ----------
+var attachCtx = null; // {kind, id}
+var attachMode = 'arquivo'; // 'arquivo' | 'texto' — só usado para comprovante
+
+async function openAttachModal(kind, id){
+  attachCtx = {kind: kind, id: id};
+  var p = state.payments.find(function(x){ return x.id === id; });
+  if(!p) return;
+
+  if(kind === 'comprovante'){
+    attachMode = p.comprovanteText ? 'texto' : 'arquivo';
+    if(attachMode === 'arquivo' && p.hasComprovante){
+      renderComprovanteModal(p, null, 'Carregando…');
+      var file0 = await getFile('comprovante', id);
+      renderComprovanteModal(p, file0, null);
+    } else {
+      renderComprovanteModal(p, null, null);
+    }
+    return;
+  }
+
+  var label = 'Invoice';
+  renderAttachModal(label, null, 'Carregando…');
+  var file = p.hasInvoice ? await getFile(kind, id) : null;
+  renderAttachModal(label, file, null);
+}
+
+function attachPreviewHtml(file){
+  var dataUrl = 'data:' + (file.type || 'application/octet-stream') + ';base64,' + file.data;
+  if(file.type && file.type.indexOf('image/') === 0){
+    return '<div class="attach-preview"><img src="' + dataUrl + '" alt="Pré-visualização de ' + escapeHtml(file.name) + '"></div>';
+  }
+  if(file.type === 'application/pdf'){
+    return '<div class="attach-preview"><embed src="' + dataUrl + '" type="application/pdf"></div>';
+  }
+  return '<div class="attach-preview attach-preview-generic">📄 Pré-visualização não disponível para este tipo de arquivo — use Baixar para abrir.</div>';
+}
+
+function renderAttachModal(label, file, loadingMsg){
+  var body;
+  if(loadingMsg){
+    body = '<p class="attach-hint">' + loadingMsg + '</p>';
+  } else if(file){
+    body =
+      attachPreviewHtml(file) +
+      '<div class="attach-current"><span class="fname">' + escapeHtml(file.name) + '</span>' +
+        '<button class="btn secondary small" data-action="download-attach">Baixar</button>' +
+      '</div>' +
+      '<input type="file" id="f-attach-file">' +
+      '<p class="attach-hint">Escolher um novo arquivo substitui o atual. Tamanho máximo: 3,5 MB.</p>' +
+      '<div id="attach-error"></div>' +
+      '<div class="modal-actions">' +
+        '<button class="btn danger secondary" data-action="remove-attach">Remover</button>' +
+        '<button class="btn secondary" data-action="close-modal">Fechar</button>' +
+        '<button class="btn" data-action="save-attach">Substituir</button>' +
+      '</div>';
+  } else {
+    body =
+      '<input type="file" id="f-attach-file">' +
+      '<p class="attach-hint">Tamanho máximo: 3,5 MB. Visível para as 3 pessoas do financeiro.</p>' +
+      '<div id="attach-error"></div>' +
+      '<div class="modal-actions">' +
+        '<button class="btn secondary" data-action="close-modal">Cancelar</button>' +
+        '<button class="btn" data-action="save-attach">Anexar</button>' +
+      '</div>';
+  }
+
+  document.getElementById('modal-root').innerHTML =
+    '<div class="overlay" id="overlay">' +
+      '<div class="modal" role="dialog" aria-modal="true">' +
+        '<h2>' + label + '</h2>' +
+        body +
+      '</div>' +
+    '</div>';
+
+  if(file) window._currentAttachFile = file;
+}
+
+// ---------- comprovante: arquivo OU texto ----------
+function renderComprovanteModal(p, file, loadingMsg){
+  var modeArquivo = attachMode === 'arquivo';
+  var tabsHtml =
+    '<div class="chiprow" style="margin-bottom:14px;">' +
+      '<div class="chip' + (modeArquivo ? ' active' : '') + '" data-action="comp-mode" data-mode="arquivo">📎 Anexar arquivo</div>' +
+      '<div class="chip' + (!modeArquivo ? ' active' : '') + '" data-action="comp-mode" data-mode="texto">✍️ Escrever comprovante</div>' +
+    '</div>';
+
+  var body;
+  if(modeArquivo){
+    if(loadingMsg){
+      body = '<p class="attach-hint">' + loadingMsg + '</p>';
+    } else if(file){
+      body =
+        attachPreviewHtml(file) +
+        '<div class="attach-current"><span class="fname">' + escapeHtml(file.name) + '</span>' +
+          '<button class="btn secondary small" data-action="download-attach">Baixar</button>' +
+        '</div>' +
+        '<input type="file" id="f-attach-file">' +
+        '<p class="attach-hint">Escolher um novo arquivo substitui o atual. Tamanho máximo: 3,5 MB.</p>' +
+        '<div id="attach-error"></div>' +
+        '<div class="modal-actions">' +
+          '<button class="btn danger secondary" data-action="remove-attach">Remover</button>' +
+          '<button class="btn secondary" data-action="close-modal">Fechar</button>' +
+          '<button class="btn" data-action="save-attach">Substituir</button>' +
+        '</div>';
+    } else {
+      body =
+        '<input type="file" id="f-attach-file">' +
+        '<p class="attach-hint">Tamanho máximo: 3,5 MB. Visível para as 3 pessoas do financeiro.</p>' +
+        '<div id="attach-error"></div>' +
+        '<div class="modal-actions">' +
+          '<button class="btn secondary" data-action="close-modal">Cancelar</button>' +
+          '<button class="btn" data-action="save-attach">Anexar</button>' +
+        '</div>';
+    }
+  } else {
+    body =
+      '<div class="field"><label for="f-comp-texto">Como o pagamento foi confirmado</label>' +
+        '<textarea id="f-comp-texto" placeholder="Ex: Pago via PIX em 20/07, chave xxx, confirmado pelo banco às 14h32...">' + escapeHtml(p.comprovanteText||'') + '</textarea>' +
+      '</div>' +
+      '<p class="attach-hint">Use quando não tiver PDF ou imagem do comprovante — só descreva como foi feito.</p>' +
+      '<div class="modal-actions">' +
+        (p.comprovanteText ? '<button class="btn danger secondary" data-action="remove-comp-texto">Remover</button>' : '') +
+        '<button class="btn secondary" data-action="close-modal">Cancelar</button>' +
+        '<button class="btn" data-action="save-comp-texto">Salvar</button>' +
+      '</div>';
+  }
+
+  document.getElementById('modal-root').innerHTML =
+    '<div class="overlay" id="overlay">' +
+      '<div class="modal" role="dialog" aria-modal="true">' +
+        '<h2>Comprovante de pagamento</h2>' +
+        tabsHtml +
+        body +
+      '</div>' +
+    '</div>';
+
+  if(file) window._currentAttachFile = file;
+}
+
+async function switchComprovanteMode(mode){
+  attachMode = mode;
+  var p = state.payments.find(function(x){ return x.id === attachCtx.id; });
+  if(!p) return;
+  if(mode === 'arquivo' && p.hasComprovante && !p.comprovanteText){
+    renderComprovanteModal(p, null, 'Carregando…');
+    var file = await getFile('comprovante', attachCtx.id);
+    renderComprovanteModal(p, file, null);
+  } else {
+    renderComprovanteModal(p, null, null);
+  }
+}
+
+async function saveComprovanteTexto(){
+  var val = document.getElementById('f-comp-texto').value.trim();
+  if(!val) return;
+  var p = state.payments.find(function(x){ return x.id === attachCtx.id; });
+  if(!p) return;
+  if(p.hasComprovante && !p.comprovanteText){
+    await deleteFile('comprovante', p.id);
+  }
+  p.comprovanteText = val;
+  p.hasComprovante = true;
+  p.comprovanteFileName = null;
+  if(p.status !== 'pago'){
+    p.status = 'pago';
+    p.data_pagamento = todayISO();
+  }
+  closeModal();
+  render();
+  await savePayments();
+}
+
+async function removeComprovanteTexto(){
+  var p = state.payments.find(function(x){ return x.id === attachCtx.id; });
+  if(!p) return;
+  p.comprovanteText = null;
+  p.hasComprovante = false;
+  closeModal();
+  render();
+  await savePayments();
+}
+
+function fileToBase64(file){
+  return new Promise(function(resolve, reject){
+    var reader = new FileReader();
+    reader.onload = function(){ resolve(reader.result.split(',')[1]); };
+    reader.onerror = function(){ reject(new Error('Falha ao ler arquivo')); };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function saveAttach(){
+  var input = document.getElementById('f-attach-file');
+  var errEl = document.getElementById('attach-error');
+  var f = input && input.files && input.files[0];
+  if(!f){
+    if(errEl) errEl.innerHTML = '<p class="attach-error">Escolha um arquivo primeiro.</p>';
+    return;
+  }
+  if(f.size > MAX_FILE_BYTES){
+    errEl.innerHTML = '<p class="attach-error">Arquivo muito grande (máx. 3,5 MB). Tente um arquivo menor ou compacte o PDF.</p>';
+    return;
+  }
+  try{
+    var b64 = await fileToBase64(f);
+    await setFile(attachCtx.kind, attachCtx.id, {name: f.name, type: f.type, data: b64});
+    var p = state.payments.find(function(x){ return x.id === attachCtx.id; });
+    if(p){
+      if(attachCtx.kind === 'invoice'){ p.hasInvoice = true; p.invoiceFileName = f.name; }
+      else{
+        p.hasComprovante = true; p.comprovanteFileName = f.name; p.comprovanteText = null;
+        if(p.status !== 'pago'){ p.status = 'pago'; p.data_pagamento = todayISO(); }
+      }
+    }
+    closeModal();
+    render();
+    await savePayments();
+  }catch(e){
+    errEl.innerHTML = '<p class="attach-error">Erro ao anexar o arquivo. Tente novamente.</p>';
+  }
+}
+
+async function removeAttach(){
+  await deleteFile(attachCtx.kind, attachCtx.id);
+  var p = state.payments.find(function(x){ return x.id === attachCtx.id; });
+  if(p){
+    if(attachCtx.kind === 'invoice'){ p.hasInvoice = false; p.invoiceFileName = null; }
+    else{ p.hasComprovante = false; p.comprovanteFileName = null; p.comprovanteText = null; }
+  }
+  closeModal();
+  render();
+  await savePayments();
+}
+
+function downloadAttach(){
+  var file = window._currentAttachFile;
+  if(!file) return;
+  try{
+    var byteChars = atob(file.data);
+    var byteNumbers = new Array(byteChars.length);
+    for(var i=0;i<byteChars.length;i++){ byteNumbers[i] = byteChars.charCodeAt(i); }
+    var byteArray = new Uint8Array(byteNumbers);
+    var blob = new Blob([byteArray], {type: file.type || 'application/octet-stream'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = file.name || 'arquivo';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  }catch(e){
+    console.error('Erro ao baixar arquivo', e);
+  }
+}
+
+// ---------- backup / restore via .zip (dados + arquivos reais anexados) ----------
+async function doBackup(){
+  var rows = state.payments.map(function(p){
+    return {
+      ID: p.id,
+      Empresa: p.empresa,
+      Fornecedor: p.fornecedor,
+      Numero: p.numero,
+      Valor: p.valor,
+      Vencimento: p.vencimento,
+      Responsavel: p.responsavel,
+      Status: p.status,
+      DataPagamento: p.data_pagamento || '',
+      Observacoes: p.obs || '',
+      TemInvoice: p.hasInvoice ? 'sim' : 'não',
+      InvoiceArquivo: p.invoiceFileName || '',
+      TemComprovante: p.hasComprovante ? 'sim' : 'não',
+      ComprovanteArquivo: p.comprovanteFileName || '',
+      ComprovanteTexto: p.comprovanteText || ''
+    };
+  });
+
+  var ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{wch:22},{wch:10},{wch:18},{wch:14},{wch:12},{wch:12},{wch:14},{wch:10},{wch:14},{wch:40},{wch:9},{wch:20},{wch:12},{wch:20},{wch:40}];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Pagamentos');
+  var xlsxBytes = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+
+  var zip = new JSZip();
+  zip.file('pagamentos.xlsx', xlsxBytes);
+
+  var manifest = [];
+  for(var i=0;i<state.payments.length;i++){
+    var p = state.payments[i];
+    var kinds = [];
+    if(p.hasInvoice) kinds.push('invoice');
+    if(p.hasComprovante && !p.comprovanteText) kinds.push('comprovante');
+    for(var k=0;k<kinds.length;k++){
+      var kind = kinds[k];
+      var file = await getFile(kind, p.id);
+      if(!file || !file.data) continue;
+      var safeName = (file.name || (kind + '.bin')).replace(/[^a-zA-Z0-9._-]/g, '_');
+      var zipPath = 'anexos/' + p.id + '__' + kind + '__' + safeName;
+      zip.file(zipPath, file.data, {base64: true});
+      manifest.push({id: p.id, kind: kind, filename: file.name || '', mimetype: file.type || '', zipPath: zipPath});
+    }
+  }
+  zip.file('manifest.json', JSON.stringify(manifest, null, 2));
+
+  var blob = await zip.generateAsync({type:'blob'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'coummar_backup_' + todayISO() + '.zip';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+}
+
+function buildPaymentsFromRows(rows){
+  return rows.map(function(r){
+    var temComprovanteTexto = String(r.ComprovanteTexto || '').trim();
+    return {
+      id: String(r.ID || uid()),
+      empresa: String(r.Empresa || ''),
+      fornecedor: String(r.Fornecedor || ''),
+      numero: String(r.Numero || ''),
+      valor: parseFloat(r.Valor) || 0,
+      vencimento: normalizeDateCell(r.Vencimento),
+      responsavel: String(r.Responsavel || ''),
+      status: String(r.Status || 'pendente'),
+      data_pagamento: normalizeDateCell(r.DataPagamento),
+      obs: String(r.Observacoes || ''),
+      hasInvoice: String(r.TemInvoice||'').toLowerCase() === 'sim',
+      invoiceFileName: r.InvoiceArquivo || null,
+      hasComprovante: String(r.TemComprovante||'').toLowerCase() === 'sim' || !!temComprovanteTexto,
+      comprovanteFileName: temComprovanteTexto ? null : (r.ComprovanteArquivo || null),
+      comprovanteText: temComprovanteTexto || null
+    };
+  }).filter(function(p){ return p.fornecedor && p.vencimento; });
+}
+
+function normalizeDateCell(v){
+  if(v === null || v === undefined || v === '') return null;
+  if(typeof v === 'number'){
+    try{
+      var d = XLSX.SSF.parse_date_code(v);
+      if(d) return d.y + '-' + String(d.m).padStart(2,'0') + '-' + String(d.d).padStart(2,'0');
+    }catch(e){ /* segue para tentar como string */ }
+  }
+  var s = String(v).trim();
+  var iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(iso) return iso[1] + '-' + iso[2] + '-' + iso[3];
+  var br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if(br) return br[3] + '-' + br[2] + '-' + br[1];
+  return s || null;
+}
+
+function doRestore(e){
+  var file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+  var isZip = /\.zip$/i.test(file.name);
+  var ok = window.confirm(isZip
+    ? 'Restaurar vai substituir TODOS os pagamentos atuais pelos dados desse backup (.zip), incluindo os arquivos de invoice/comprovante anexados. Continuar?'
+    : 'Restaurar vai substituir TODOS os pagamentos atuais pelos dados dessa planilha.\n\nEsse é um arquivo .xlsx simples — só os dados da tabela são restaurados. Se você tiver um backup completo (.zip) com os arquivos anexados, use ele em vez desse. Continuar?');
+  if(!ok) return;
+
+  var reader = new FileReader();
+  reader.onload = async function(evt){
+    try{
+      if(isZip){
+        await restoreFromZip(evt.target.result);
+      } else {
+        await restoreFromXlsx(evt.target.result);
+      }
+    }catch(err){
+      console.error('Erro ao restaurar', err);
+      alert('Não consegui ler esse arquivo. Confirme se é um backup (.zip) ou planilha (.xlsx) gerado por este painel.');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function restoreFromXlsx(buffer){
+  var data = new Uint8Array(buffer);
+  var wb = XLSX.read(data, {type:'array'});
+  var sheetName = wb.SheetNames[0];
+  var rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {defval:''});
+  var restored = buildPaymentsFromRows(rows);
+
+  // compatibilidade com o formato antigo (aba "Anexos" em blocos de texto), caso exista
+  var anexosRestaurados = 0;
+  var anexosSheet = wb.Sheets['Anexos'];
+  if(anexosSheet){
+    var anexoRows = XLSX.utils.sheet_to_json(anexosSheet, {defval:''});
+    var grouped = {};
+    anexoRows.forEach(function(r){
+      if(!r.PagamentoID || !r.Tipo || r.ChunkData === '') return;
+      var key = r.PagamentoID + '::' + r.Tipo;
+      if(!grouped[key]) grouped[key] = {name: r.Arquivo, type: r.MimeType, chunks: []};
+      grouped[key].chunks[Number(r.ChunkIndex) || 0] = String(r.ChunkData);
+    });
+    var keys = Object.keys(grouped);
+    for(var k=0;k<keys.length;k++){
+      var parts = keys[k].split('::');
+      var pid = parts[0], tipo = parts[1];
+      var g = grouped[keys[k]];
+      var fullData = g.chunks.join('');
+      if(fullData){
+        await setFile(tipo, pid, {name: g.name, type: g.type, data: fullData});
+        anexosRestaurados++;
+      }
+    }
+  }
+
+  state.payments = restored;
+  render();
+  await savePayments();
+  alert('Planilha restaurada: ' + restored.length + ' pagamento(s)' + (anexosRestaurados ? ' e ' + anexosRestaurados + ' anexo(s)' : '') + ' carregado(s).');
+}
+
+async function restoreFromZip(buffer){
+  var zip = await JSZip.loadAsync(buffer);
+  var pagFile = zip.file('pagamentos.xlsx');
+  if(!pagFile){ throw new Error('zip sem pagamentos.xlsx'); }
+  var xlsxArray = await pagFile.async('uint8array');
+  var wb = XLSX.read(xlsxArray, {type:'array'});
+  var sheetName = wb.SheetNames[0];
+  var rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {defval:''});
+  var restored = buildPaymentsFromRows(rows);
+
+  var anexosRestaurados = 0;
+  var manifestFile = zip.file('manifest.json');
+  if(manifestFile){
+    var manifestText = await manifestFile.async('text');
+    var manifest = JSON.parse(manifestText);
+    for(var i=0;i<manifest.length;i++){
+      var m = manifest[i];
+      var f = zip.file(m.zipPath);
+      if(!f) continue;
+      var b64 = await f.async('base64');
+      await setFile(m.kind, m.id, {name: m.filename, type: m.mimetype, data: b64});
+      anexosRestaurados++;
+    }
+  }
+
+  state.payments = restored;
+  render();
+  await savePayments();
+  alert('Backup restaurado: ' + restored.length + ' pagamento(s)' + (anexosRestaurados ? ' e ' + anexosRestaurados + ' anexo(s)' : '') + '.');
+}
+
+// ---------- texto do cronograma (próximos 30 dias) ----------
+function scheduleDateLabel(iso){
+  var parts = iso.split('-');
+  var m = parseInt(parts[1],10) - 1;
+  return parts[2] + '-' + capitalize(MESES[m] || '');
+}
+
+function fmtValorBR(v){
+  return '$' + Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function build30DayScheduleText(){
+  var t = todayISO();
+  var list = state.payments.filter(function(p){
+    if(statusOf(p) === 'pago') return false;
+    if(statusOf(p) === 'atrasado') return true;
+    var d1 = new Date(t + 'T00:00:00');
+    var d2 = new Date(p.vencimento + 'T00:00:00');
+    var diff = (d2 - d1) / 86400000;
+    return diff >= 0 && diff <= 29;
+  }).sort(function(a,b){ return a.vencimento.localeCompare(b.vencimento); });
+
+  if(list.length === 0) return 'PAYMENT SCHEDULE:\n(nenhum pagamento pendente nos próximos 30 dias)';
+
+  var byDate = {}; var order = [];
+  list.forEach(function(p){
+    if(!byDate[p.vencimento]){ byDate[p.vencimento] = []; order.push(p.vencimento); }
+    byDate[p.vencimento].push(p);
+  });
+
+  var lines = ['PAYMENT SCHEDULE:'];
+  order.forEach(function(d){
+    lines.push('Schedule ' + scheduleDateLabel(d));
+    byDate[d].forEach(function(p){
+      var tag = p.empresa === 'TINSEI' ? ' (TINSEI)' : '';
+      lines.push(p.fornecedor + ' - ' + (p.numero || '—') + ' - ' + fmtValorBR(p.valor) + tag);
+    });
+  });
+  return lines.join('\n');
+}
+
+function openSchedule30Modal(){
+  var text = build30DayScheduleText();
+  document.getElementById('modal-root').innerHTML =
+    '<div class="overlay" id="overlay">' +
+      '<div class="modal" role="dialog" aria-modal="true" style="width:min(560px,94vw);">' +
+        '<h2>Cronograma — próximos 30 dias</h2>' +
+        '<textarea id="schedule-30-text" readonly style="width:100%;min-height:320px;font-family:var(--font-mono);font-size:12.5px;line-height:1.6;padding:10px;border:1px solid var(--line-strong);border-radius:8px;background:var(--paper);color:var(--ink);resize:vertical;">' + escapeHtml(text) + '</textarea>' +
+        '<p class="attach-hint">Toque no texto e use "Selecionar tudo" abaixo, depois copie (Ctrl+C, ou apertar e segurar no celular).</p>' +
+        '<div class="modal-actions">' +
+          '<button class="btn secondary" data-action="select-schedule-30">Selecionar tudo</button>' +
+          '<button class="btn" data-action="close-modal">Fechar</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+}
+
+// ---------- event delegation ----------
+document.getElementById('btn-add').addEventListener('click', openAdd);
+
+document.getElementById('btn-refresh').addEventListener('click', loadPayments);
+document.getElementById('btn-backup').addEventListener('click', doBackup);
+document.getElementById('btn-restore').addEventListener('click', function(){
+  document.getElementById('f-restore-input').click();
+});
+document.getElementById('f-restore-input').addEventListener('change', doRestore);
+document.getElementById('btn-texto-30').addEventListener('click', openSchedule30Modal);
+document.getElementById('search-input').addEventListener('input', function(e){
+  state.searchQuery = e.target.value;
+  render();
+});
+
+document.getElementById('tabs').addEventListener('click', function(e){
+  var t = e.target.closest('.tab');
+  if(!t) return;
+  state.tab = t.dataset.tab;
+  render();
+});
+
+document.getElementById('empresa-filter').addEventListener('click', function(e){
+  var c = e.target.closest('.chip');
+  if(!c) return;
+  state.empresaFilter = c.dataset.empresa;
+  render();
+});
+
+document.getElementById('content').addEventListener('click', function(e){
+  var monthHead = e.target.closest('[data-action="toggle-month"]');
+  if(monthHead){
+    var k = monthHead.dataset.month;
+    state.openMonths[k] = !state.openMonths[k];
+    var block = monthHead.closest('.month-block');
+    if(block) block.classList.toggle('open', !!state.openMonths[k]);
+    return;
+  }
+  var btn = e.target.closest('[data-action]');
+  if(!btn) return;
+  var action = btn.dataset.action;
+  var id = btn.dataset.id;
+  if(action === 'toggle') toggleStatus(id);
+  else if(action === 'edit') openEdit(id);
+  else if(action === 'delete') askDelete(id);
+  else if(action === 'confirm-delete') confirmDelete(id);
+  else if(action === 'cancel-delete') render();
+  else if(action === 'invoice') openAttachModal('invoice', id);
+  else if(action === 'comprovante') openAttachModal('comprovante', id);
+});
+
+document.getElementById('modal-root').addEventListener('click', function(e){
+  var action = e.target.closest('[data-action]');
+  if(action){
+    var a = action.dataset.action;
+    if(a === 'close-modal') closeModal();
+    else if(a === 'save-form') saveForm();
+    else if(a === 'save-attach') saveAttach();
+    else if(a === 'remove-attach') removeAttach();
+    else if(a === 'download-attach') downloadAttach();
+    else if(a === 'comp-mode') switchComprovanteMode(action.dataset.mode);
+    else if(a === 'save-comp-texto') saveComprovanteTexto();
+    else if(a === 'remove-comp-texto') removeComprovanteTexto();
+    else if(a === 'select-schedule-30'){
+      var ta = document.getElementById('schedule-30-text');
+      if(ta){ ta.focus(); ta.select(); }
+    }
+    return;
+  }
+  if(e.target.id === 'overlay') closeModal();
+});
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeModal();
+});
+
+// ---------- boot ----------
+loadPayments();
+setInterval(loadPayments, 20000);
+
+})();
+</script>
+</body>
+</html>
